@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Tareas — Lab IV</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11;
+      --surface: #18181c;
+      --border: #2a2a30;
+      --accent: #7c6af7;
+      --accent2: #4dd9ac;
+      --danger: #f76a6a;
+      --text: #e8e8f0;
+      --muted: #666680;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(124,106,247,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .container { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; }
+
+    /* HEADER */
+    header { margin-bottom: 2.5rem; }
+    .label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+    .subtitle { color: var(--muted); font-size: 0.875rem; margin-top: 0.3rem; }
+
+    /* FORM */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    input, textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      padding: 0.6rem 0.9rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    textarea { resize: vertical; min-height: 70px; grid-column: 1 / -1; }
+
+    /* BUTTONS */
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    button {
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.55rem 1.2rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #9180ff; transform: translateY(-1px); }
+    .btn-secondary { background: var(--border); color: var(--text); }
+    .btn-secondary:hover { background: #35353f; }
+
+    /* STATS */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-num {
+      font-family: var(--mono);
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: var(--accent);
+    }
+    .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* TASK LIST */
+    .task-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .task-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      transition: border-color 0.2s, transform 0.15s;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .task-item:hover { border-color: rgba(124,106,247,0.4); transform: translateX(2px); }
+    .task-item.done { opacity: 0.55; }
+    .task-item.done .task-title { text-decoration: line-through; }
+
+    .task-id {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+    .task-body { flex: 1; min-width: 0; }
+    .task-title { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.2rem; }
+    .task-desc { font-size: 0.8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .btn-sm {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+    }
+    .btn-done { background: rgba(77,217,172,0.15); color: var(--accent2); border: 1px solid rgba(77,217,172,0.25); }
+    .btn-done:hover { background: rgba(77,217,172,0.25); }
+    .btn-del { background: rgba(247,106,106,0.12); color: var(--danger); border: 1px solid rgba(247,106,106,0.22); }
+    .btn-del:hover { background: rgba(247,106,106,0.22); }
+
+    /* STATUS */
+    .status-bar {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); display: inline-block; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .empty { text-align: center; color: var(--muted); font-size: 0.875rem; padding: 2.5rem 0; }
+    .empty span { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+
+    @media(max-width: 500px) {
+      .form-row { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <p class="label">Laboratorio IV · PUCE · Computación Distribuida</p>
+    <h1>Gestión de Tareas</h1>
+    <p class="subtitle">Aplicación distribuida · FastAPI + Frontend · Cloud Ready</p>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-num" id="stat-pend" style="color:var(--accent2)">0</div><div class="stat-label">Pendientes</div></div>
+    <div class="stat"><div class="stat-num" id="stat-done" style="color:var(--muted)">0</div><div class="stat-label">Completadas</div></div>
+  </div>
+
+  <!-- Form -->
+  <div class="card">
+    <p class="card-title">// nueva tarea</p>
+    <div class="form-row">
+      <input id="titulo" placeholder="Título" />
+      <input id="descripcion" placeholder="Descripción" />
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="crearTarea()">＋ Crear tarea</button>
+      <button class="btn-secondary" onclick="cargarTareas()">↻ Recargar</button>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div class="status-bar"><span class="dot"></span><span id="status-text">Conectando con la API…</span></div>
+  <div class="task-list" id="lista"></div>
+</div>
+
+<script>
+  const API_URL = "http://127.0.0.1:8000/tareas";
+
+  async function cargarTareas() {
+    try {
+      const res = await fetch(API_URL);
+      const tareas = await res.json();
+      renderTareas(tareas);
+      actualizarStats(tareas);
+      document.getElementById("status-text").textContent =
+        `API conectada · ${tareas.length} tarea(s) cargadas`;
+    } catch (e) {
+      document.getElementById("status-text").textContent = "Error al conectar con la API";
+    }
+  }
+
+  async function crearTarea() {
+    const titulo = document.getElementById("titulo").value.trim();
+    const descripcion = document.getElementById("descripcion").value.trim();
+    if (!titulo || !descripcion) { alert("Completa título y descripción"); return; }
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titulo, descripcion })
+    });
+    if (res.ok) {
+      document.getElementById("titulo").value = "";
+      document.getElementById("descripcion").value = "";
+      await cargarTareas();
+    }
+  }
+
+  async function marcarCompleta(id, tarea) {
+    await fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...tarea, completada: !tarea.completada })
+    });
+    await cargarTareas();
+  }
+
+  async function eliminarTarea(id) {
+    if (!confirm(`¿Eliminar tarea #${id}?`)) return;
+    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    await cargarTareas();
+  }
+
+  function renderTareas(tareas) {
+    const lista = document.getElementById("lista");
+    if (tareas.length === 0) {
+      lista.innerHTML = '<div class="empty"><span>📋</span>No hay tareas aún. ¡Crea la primera!</div>';
+      return;
+    }
+    lista.innerHTML = tareas.map(t => `
+      <div class="task-item ${t.completada ? 'done' : ''}">
+        <span class="task-id">#${t.id}</span>
+        <div class="task-body">
+          <div class="task-title">${escHtml(t.titulo)}</div>
+          <div class="task-desc">${escHtml(t.descripcion)}</div>
+        </div>
+        <div class="task-actions">
+          <button class="btn-sm btn-done" onclick='marcarCompleta(${t.id}, ${JSON.stringify(t)})'>
+            ${t.completada ? '↩ Reabrir' : '✓ Listo'}
+          </button>
+          <button class="btn-sm btn-del" onclick="eliminarTarea(${t.id})">✕</button>
+        </div>
+      </div>`).join("");
+  }
+
+  function actualizarStats(tareas) {
+    const done = tareas.filter(t => t.completada).length;
+    document.getElementById("stat-total").textContent = tareas.length;
+    document.getElementById("stat-pend").textContent  = tareas.length - done;
+    document.getElementById("stat-done").textContent  = done;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  cargarTareas();
+</script>
+</body>
+</html>
