@@ -20,16 +20,19 @@ class Tarea(BaseModel):
 
 tareas: List[Tarea] = []
 
+@app.get("/api/tareas")
 @app.get("/tareas")
 async def listar_tareas():
     return tareas
 
+@app.post("/api/tareas")
 @app.post("/tareas")
 async def crear_tarea(tarea: Tarea):
     tarea.id = len(tareas) + 1
     tareas.append(tarea)
     return {"mensaje": "Tarea creada exitosamente", "tarea": tarea}
 
+@app.get("/api/tareas/{tarea_id}")
 @app.get("/tareas/{tarea_id}")
 async def obtener_tarea(tarea_id: int):
     for tarea in tareas:
@@ -37,6 +40,7 @@ async def obtener_tarea(tarea_id: int):
             return tarea
     raise HTTPException(status_code=404, detail="Tarea no encontrada")
 
+@app.put("/api/tareas/{tarea_id}")
 @app.put("/tareas/{tarea_id}")
 async def actualizar_tarea(tarea_id: int, tarea_actualizada: Tarea):
     for i, tarea in enumerate(tareas):
@@ -46,6 +50,7 @@ async def actualizar_tarea(tarea_id: int, tarea_actualizada: Tarea):
             return {"mensaje": "Tarea actualizada", "tarea": tarea_actualizada}
     raise HTTPException(status_code=404, detail="Tarea no encontrada")
 
+@app.delete("/api/tareas/{tarea_id}")
 @app.delete("/tareas/{tarea_id}")
 async def eliminar_tarea(tarea_id: int):
     for i, tarea in enumerate(tareas):
